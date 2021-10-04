@@ -14,6 +14,15 @@ import pandas as pd
 import sklearn.decomposition # Módulo donde encontramos el análisis de componentes principales
 import sklearn.manifold # Módulo donde encontramos el método t-Distributed Stochastic Neighbor Embedding
 import matplotlib.pyplot as plt
+import sklearn.datasets
+import sklearn.svm # Support vector machines
+import sklearn.metrics
+import sklearn.gaussian_process # Kernel de transformación del espacio
+import sklearn.preprocessing
+import matplotlib.pyplot as plt
+import plotly.express as px
+import numpy as np
+import scipy
 
 """Olivetti blah blah"""
 
@@ -118,3 +127,16 @@ axs[1].imshow(
 )
 axs[1].set_title("Imagen utilizando 123 Principal Components")
 fig.tight_layout()
+
+"""##Support Vector Machines"""
+
+(X_train, X_test, y_train, y_test) = sklearn.model_selection.train_test_split(olivetti_faces.iloc[:,:-1].to_numpy(),olivetti_faces.iloc[:,-1:].to_numpy(),test_size=0.3, 
+    random_state=11)
+
+# from sklearn.cross_validation import train_test_split
+
+# X_train, X_test, y_train, y_test = train_test_split(
+        # faces.data, faces.target, test_size=0.25, random_state=0)
+
+svm_linear = sklearn.svm.SVC(kernel="linear")
+svm_linear.fit(X_train, np.ravel(y_train,order='C'))
