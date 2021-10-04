@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import numpy as np
 import scipy
+import sklearn.dummy
 
 """Olivetti blah blah"""
 
@@ -128,7 +129,7 @@ axs[1].imshow(
 axs[1].set_title("Imagen utilizando 123 Principal Components")
 fig.tight_layout()
 
-"""##Support Vector Machines"""
+"""##Metodo Supervisado: Support Vector Machines"""
 
 (X_train, X_test, y_train, y_test) = sklearn.model_selection.train_test_split(olivetti_faces.iloc[:,:-1].to_numpy(),olivetti_faces.iloc[:,-1:].to_numpy(),test_size=0.3, 
     random_state=11)
@@ -140,3 +141,68 @@ fig.tight_layout()
 
 svm_linear = sklearn.svm.SVC(kernel="linear")
 svm_linear.fit(X_train, np.ravel(y_train,order='C'))
+
+"""##Cross Validation
+
+"""
+
+olivetti_faces['subject']
+
+"""Funcion copiada del notebook 5.2-cross-validation.ipynb **cross_val_store**():"""
+
+def cross_val_score(**kwargs):
+    """
+    Recibe los argumentos para pasárselos a la función sklearn.model_selection.cross_validate
+    Retorna una lista con los valores de AUCROC de cada una de las divisiones.
+    """
+    cv = sklearn.model_selection.cross_validate( # Esta función entrena un modelo para distintos subconjuntos generados al azar.
+        # scoring = 'roc_auc', # Usamos la medida de AUCROC para medir el rendimiento de los modelos
+        cv = sklearn.model_selection.StratifiedKFold( # La división se realiza de manera estratificada
+            n_splits = 10, # Creamos 10 subconjuntos
+            shuffle = True, # Desordenamos los datos antes de dividirlos
+        ),
+        n_jobs = None, # Usamos sólo 1 worker para el entrenmiento
+        **kwargs # Pasamos los argumentos recibidos por la función
+    )
+    return cv["test_score"]
+
+dummy_scores = cross_val_score(
+    estimator = sklearn.dummy.DummyClassifier(strategy="stratified"),
+    X = olivetti_faces.iloc[:,:-1],
+    y = olivetti_faces['subject']
+)
+
+svm_scores = cross_val_score(
+    estimator = sklearn.svm.SVC(),
+    X = olivetti_faces.iloc[:,:-1],
+    y = olivetti_faces['subject']
+)
+
+scores = [ # Guardamos todos los resultados en una lista
+    svm_scores,
+    dummy_scores
+]
+names = [
+    "Support Vector Machine",
+    "Dummy Classifier"
+]
+plt.boxplot(
+    scores,
+    labels = names
+)
+plt.xticks(rotation=45)
+plt.show()
+
+dict(
+    zip(
+        names,
+        map(
+            np.mean,
+            scores
+        )
+    )
+)
+
+"""ANOVA:"""
+
+scipy.stats.f_oneway(*scores)
