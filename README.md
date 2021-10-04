@@ -1,0 +1,5 @@
+* LogisticRegression
+* DecisionTreeClassifier
+* SVC
+
+
